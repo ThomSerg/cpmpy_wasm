@@ -1,0 +1,10 @@
+
+package:
+  name: pumpkin-solver-py
+  version: "0.1.0"
+
+source:
+  path: Pumpkin/pumpkin-solver-py
+
+build:
+  script: python -m pip install . --no-deps -v
