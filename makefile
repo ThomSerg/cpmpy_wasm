@@ -1,6 +1,11 @@
 
-PYTHON_VERSION = 3.12.9
+PYTHON_VERSION = 3.12.7
 VENV_DIR = .venv
+REQUIREMENTS = requirements.txt
+BRANCH_NAME = pumpkin
+PATCH_FILE = setup.patch
+DIST_DIR = dist
+WHEEL_DIR = build
 
 init-venv:
 	@if command -v pyenv > /dev/null; then \
@@ -10,20 +15,46 @@ init-venv:
 			pyenv install $(PYTHON_VERSION); \
 		fi; \
 		pyenv local $(PYTHON_VERSION); \
+		PYTHON_BIN=$$(pyenv which python); \
 	else \
 		echo "pyenv not found, checking for system python$(PYTHON_VERSION)..."; \
 		if ! command -v python$(PYTHON_VERSION) > /dev/null; then \
 			echo "Python $(PYTHON_VERSION) not found. Please install it manually or use pyenv."; \
 			exit 1; \
 		fi; \
-	fi
-	@if [ ! -d "$(VENV_DIR)" ]; then \
+		PYTHON_BIN=$$(command -v python$(PYTHON_VERSION)); \
+	fi; \
+	if [ ! -d "$(VENV_DIR)" ]; then \
 		echo "Creating virtual environment in $(VENV_DIR)..."; \
-		python$(PYTHON_VERSION) -m venv $(VENV_DIR); \
+		$$PYTHON_BIN -m venv $(VENV_DIR); \
 	else \
-		echo "Virtual environment already exists in $(VENV_DIR), skipping."; \
+		echo "Virtual environment already exists at $(VENV_DIR), skipping creation."; \
+	fi; \
+	echo "Installing uv into virtual environment..."; \
+	$(VENV_DIR)/bin/python -m pip install --upgrade pip; \
+	$(VENV_DIR)/bin/pip install uv; \
+	echo "Installing dependencies with uv..."; \
+	$(VENV_DIR)/bin/uv pip install -r $(REQUIREMENTS) --no-cache
+
+setup-pyodide:
+	$(VENV_DIR)/bin/uv run --no-cache -- pyodide xbuildenv install 0.27.7
+
+install-emsdk:
+	@if [ ! -d "external/cpmpy" ]; then \
+		cd external;\
+		git clone https://github.com/emscripten-core/emsdk;\
+		cd emsdk;\
+		./emsdk install 3.1.58;\
+		./emsdk activate 3.1.58;\
+		. ./emsdk_env.sh;\
+		which emcc;\
+	else \
+		echo "pass";\
 	fi
 
+activate-emsdk:
+	cd external/emsdk;\
+	. ./emsdk_env.sh;\
 
 install-rust:
 	curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -35,7 +66,11 @@ install-cpmpy:
 		git clone https://github.com/cpmpy/cpmpy.git; \
 	else \
 		echo "cpmpy already exists, skipping clone."; \
-	fi
+	fi;
+
+	cd external/cpmpy;\
+	git checkout $(BRANCH_NAME);\
+	git apply ../../$(PATCH_FILE);\
 
 install-pyodide:
 	@if [ ! -d "external/pyodide" ]; then \
@@ -45,9 +80,56 @@ install-pyodide:
 	else \
 		echo "pyodide already exists, skipping clone."; \
 	fi
-	# @if [ ! -d "./packages" ]; then \
-	# 	echo "Copying packages..."; \
-	# 	cp -r pyodide/packages ./packages; \
-	# else \
-	# 	echo "./packages already exists, skipping copy."; \
-	# fi
+
+copy-packages:
+	echo "Copying packages..."; \
+	cp -r external/pyodide/packages/* ./packages/; \
+	rm -r ./packages/test;\
+
+
+build-cpmpy:
+	cd external/emsdk;\
+	. ./emsdk_env.sh;\
+	cd ../..;\
+	export XDG_CACHE_HOME=./cache;\
+	$(VENV_DIR)/bin/uv --no-cache run pyodide build-recipes cpmpy --recipe-dir ./packages/ --install;\
+
+install-pumpkin:
+	@if [ ! -d "external/Pumpkin" ]; then \
+		echo "Cloning pumpkin..."; \
+		cd external;\
+		git clone https://github.com/ConSol-Lab/Pumpkin.git; \
+	else \
+		echo "pumpkin already exists, skipping clone."; \
+	fi;
+
+	cd external/Pumpkin;\
+	git apply ../../pumpkin.patch;\
+
+	cp rust-toolchain.toml external/Pumpkin/pumpkin-solver-py/
+
+build-pumpkin:
+	cd external/emsdk;\
+	. ./emsdk_env.sh;\
+	cd ../..;\
+	export XDG_CACHE_HOME=./cache;\
+	export MATURIN_TARGET=wasm32-unknown-unknown;\
+	export CARGO_BUILD_TARGET=wasm32-unknown-unknown;\
+	export CARGO_HOME=./.cargo;\
+	export MATURIN_PEP517_ARGS="--target wasm32-unknown-emscripten";\
+	export RUSTUP_HOME=./.rustup;\
+	cd external/Pumpkin/pumpkin-solver-py;\
+	. ../../../$(VENV_DIR)/bin/activate;\
+	rustup target add wasm32-unknown-emscripten;\
+	pyodide build;\
+
+collect-wheels:
+	@if [ ! -d "$(WHEEL_DIR)" ]; then \
+		echo "Creating directory $(WHEEL_DIR)..."; \
+		mkdir -p "$(WHEEL_DIR)"; \
+	else \
+		echo "Directory $(WHEEL_DIR) already exists, skipping."; \
+	fi
+	
+	cp external/Pumpkin/pumpkin-solver-py/dist/* $(DIST_DIR)/
+	$(VENV_DIR)/bin/python rename-tags.py --src-dir $(DIST_DIR) --tgt-dir $(WHEEL_DIR)/
