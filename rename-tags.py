@@ -10,21 +10,21 @@ def rename_platform_tag(
 ):
     if not os.path.exists(tgt_dir):
         os.makedirs(tgt_dir)
-    
+
     wheel_files = [f for f in os.listdir(src_dir) if f.endswith('.whl')]
-    
+
     for whl in wheel_files:
-        if not whl.endswith(old_platform_tag + '.whl'):
-            print(f"Skipping wheel not matching old platform tag: {whl}")
-            continue
-        
-        new_name = whl[:-len(old_platform_tag + '.whl')] + new_platform_tag + '.whl'
-        
         src_path = os.path.join(src_dir, whl)
+
+        if whl.endswith(old_platform_tag + '.whl'):
+            new_name = whl[:-len(old_platform_tag + '.whl')] + new_platform_tag + '.whl'
+            print(f"Renaming platform tag: {whl} → {new_name}")
+        else:
+            new_name = whl
+            print(f"Copying unchanged: {whl}")
+
         dst_path = os.path.join(tgt_dir, new_name)
-        
         shutil.copyfile(src_path, dst_path)
-        print(f"Copied {whl} → {new_name}")
 
 def main():
     parser = argparse.ArgumentParser(description="Rename wheel files replacing platform tags.")
