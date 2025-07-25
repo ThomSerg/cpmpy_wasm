@@ -1,0 +1,14 @@
+package:
+  name: cpmpy
+  version: "0.9.25"
+
+build:
+  script: |
+    python setup.py install
+
+source:
+  path: ../../external/cpmpy
+
+requirements:
+  run:
+    - numpy

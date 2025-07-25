@@ -1,0 +1,24 @@
+diff --git a/setup.py b/setup.py
+index 58316094..8af74f6e 100644
+--- a/setup.py
++++ b/setup.py
+@@ -43,11 +43,10 @@ setup(
+     long_description=long_description,
+     long_description_content_type="text/markdown",
+     url="https://github.com/CPMpy/cpmpy",
+-    packages=find_packages(),
++    packages=find_packages(exclude=["test", "tests"]),
+     include_package_data=True,
+     zip_safe=False,
+     install_requires=[
+-        'ortools>=9.9',
+         'numpy>=1.5',
+         'setuptools',
+     ],
+@@ -71,5 +70,5 @@ setup(
+         "License :: OSI Approved :: Apache Software License",
+         "Operating System :: OS Independent",
+     ],
+-    python_requires='>=3.8'
++    python_requires='==3.12.9'
+ )
