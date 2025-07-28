@@ -5,6 +5,20 @@ This repository provides a `Makefile` and supporting files to build a WebAssembl
 Currently, this WASM build of CPMpy only supports the Rust-based constraint solver [Pumpkin](https://github.com/consol-lab/pumpkin).
 Pumpkin is a lazy clause generation constraint programming solver developed by the ConSol Lab at TU Delft. 
 
+The WASM build is working, but is not yet all too user friendly.
+E.g. since only the Pumpkin solver is currently supported, calling `.solve()` on a model will default to `OR-Tools` and thus crash.
+This will in the future be improved with additional patches to CPMpy.
+
+For now, one can test the build using the following:
+
+```python
+import cpmpy as cp
+x = cp.intvar(0, 10)
+m = cp.Model(x > 3)
+m.solve(solver="pumpkin")
+x.value()
+```
+
 ## 📁 Repository Structure
 
 ```
