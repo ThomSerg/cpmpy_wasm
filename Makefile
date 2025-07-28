@@ -5,8 +5,8 @@ REQUIREMENTS = requirements.txt
 BRANCH_NAME = pumpkin
 DIST_DIR = dist
 WHEEL_DIR = build
-CPMPY_PATCH_FILE = cpmpy.patch
-PUMPKIN_PATH_FILE = pumpkin.patch
+CPMPY_PATCH_FILE = patches/cpmpy.patch
+PUMPKIN_PATH_FILE = patches/pumpkin.patch
 TEST_PORT = 8000
 
 all:
