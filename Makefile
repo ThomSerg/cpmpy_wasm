@@ -8,6 +8,7 @@ WHEEL_DIR = build
 CPMPY_PATCH_FILE = patches/cpmpy.patch
 PUMPKIN_PATCH_FILE = patches/pumpkin.patch
 TEST_PORT = 8000
+WHEELS := numpy-2.2.5-cp312-cp312-emscripten_3_1_58_wasm32.whl pumpkin_solver_py-0.1.0-cp312-cp312-emscripten_3_1_58_wasm32.whl build/cpmpy-0.9.25-py3-none-any.whl
 
 all:
 	$(MAKE) init
@@ -182,3 +183,10 @@ collect-wheels:
 
 	cp external/Pumpkin/pumpkin-solver-py/dist/* $(DIST_DIR)/
 	$(VENV_DIR)/bin/python rename-tags.py --src-dir $(DIST_DIR) --tgt-dir $(WHEEL_DIR)/
+
+	@echo "Zipping only selected wheels: $(WHEELS)"
+	$(VENV_DIR)/bin/python zip_selected_wheels.py $(WHEELS)
+
+
+
+
