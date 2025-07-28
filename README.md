@@ -6,7 +6,7 @@ Currently, this WASM build of CPMpy only supports the Rust-based constraint solv
 Pumpkin is a lazy clause generation constraint programming solver developed by the ConSol Lab at TU Delft. 
 
 The WASM build is working, but is not yet all too user friendly.
-E.g. since only the Pumpkin solver is currently supported, calling `.solve()` on a model will default to `OR-Tools` and thus crash.
+E.g. since only the Pumpkin solver is currently supported, calling `.solve()` on a model (which defaults to `OR-Tools`) will crash.
 This will in the future be improved with additional patches to CPMpy.
 
 For now, one can test the build using the following:
