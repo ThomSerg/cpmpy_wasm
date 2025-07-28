@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pyodide Wheel Installation Test</title>
+  <style>
+    body {
+      font-family: monospace, monospace;
+      margin: 1em;
+      background: #f9f9f9;
+    }
+    #output {
+      white-space: pre-wrap;
+      background: #eee;
+      padding: 1em;
+      height: 300px;
+      overflow: auto;
+      border: 1px solid #ccc;
+      margin-bottom: 1em;
+    }
+    #input {
+      width: 100%;
+      height: 100px;
+      font-family: monospace;
+      font-size: 1em;
+      padding: 0.5em;
+      box-sizing: border-box;
+      margin-bottom: 0.5em;
+    }
+    #run {
+      padding: 0.5em 1em;
+      font-size: 1em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pyodide Wheel Installation Test</h1>
+
+  <pre id="output"></pre>
+
+  <textarea id="input" placeholder="Type Python code here..."></textarea><br />
+  <button id="run">Run Code</button>
+
+  <!-- Load Pyodide from CDN -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.0/full/pyodide.js"></script>
+  <script>
+    async function main() {
+      const output = document.getElementById('output');
+      const input = document.getElementById('input');
+      const runBtn = document.getElementById('run');
+
+      function log(msg) {
+        output.textContent += msg + '\n';
+        output.scrollTop = output.scrollHeight;
+      }
+
+      log("Loading Pyodide...");
+      const pyodide = await loadPyodide();
+      log("Pyodide loaded.");
+
+      log("Loading micropip...");
+      await pyodide.loadPackage('micropip');
+      const micropip = pyodide.pyimport('micropip');
+
+      const wheelFiles = [
+        "build/numpy-2.2.5-cp312-cp312-emscripten_3_1_58_wasm32.whl",
+        "build/pumpkin_solver_py-0.1.0-cp312-cp312-emscripten_3_1_58_wasm32.whl",
+        "build/cpmpy-0.9.25-py3-none-any.whl",
+      ];
+
+      for (const wheel of wheelFiles) {
+        try {
+          log(`Installing ${wheel} ...`);
+          await micropip.install(`./${wheel}`);
+          log(`Installed ${wheel}`);
+        } catch (err) {
+          log(`❌ Error installing ${wheel}: ${err}`);
+        }
+      }
+
+      try {
+        log("Running test import...");
+        await pyodide.runPythonAsync(`
+import pumpkin_solver_py
+print("✅ pumpkin_solver_py imported successfully")
+`);
+        log("Done.");
+      } catch (err) {
+        log(`❌ Python error: ${err}`);
+      }
+
+      runBtn.onclick = () => {
+        const code = input.value.trim();
+        if (!code) return;
+        try {
+          const result = pyodide.runPython(code);
+          log(`>>> ${code}\n${result}`);
+        } catch (err) {
+          log(`>>> ${code}\n❌ Error: ${err}`);
+        }
+        // Note: we do NOT clear input here, so code stays after run
+      };
+    }
+
+    main();
+  </script>
+</body>
+</html>
