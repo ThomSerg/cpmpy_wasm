@@ -2,6 +2,9 @@
 
 This repository provides a `Makefile` and supporting files to build a WebAssembly (WASM) version of the [CPMPy](https://github.com/CPMpy/cpmpy) constraint programming library, suitable for running in the browser via [Pyodide](https://pyodide.org/).
 
+Currently, this WASM build of CPMpy only supports the Rust-based constraint solver [Pumpkin](https://github.com/consol-lab/pumpkin).
+Pumpkin is a lazy clause generation constraint programming solver developed by the ConSol Lab at TU Delft. 
+
 ## 📁 Repository Structure
 
 ```
