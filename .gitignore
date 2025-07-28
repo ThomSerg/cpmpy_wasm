@@ -1,8 +1,0 @@
-.venv/
-cache/
-packages/
-external/
-build/
-dist/
-.cargo/
-.rustup/
