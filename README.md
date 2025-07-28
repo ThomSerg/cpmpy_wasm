@@ -19,6 +19,8 @@ m.solve(solver="pumpkin")
 x.value()
 ```
 
+A live example is available at [https://thomserg.github.io/cpmpy_wasm/](https://thomserg.github.io/cpmpy_wasm/), which also includes downloads for the build `.whl` files.
+
 ## 📁 Repository Structure
 
 ```
