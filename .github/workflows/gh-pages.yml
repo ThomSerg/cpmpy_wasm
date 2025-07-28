@@ -28,6 +28,12 @@ jobs:
       - name: Run make all
         run: make all
 
+      - name: Force add build artifacts
+        run: |
+          git config --global user.email "thomas.s2000@hotmail.com"
+          git config --global user.name "GitHub Actions"
+          git add -f build/
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
