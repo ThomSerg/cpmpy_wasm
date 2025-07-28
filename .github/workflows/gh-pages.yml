@@ -3,7 +3,7 @@ name: Build and Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # change this if your main branch is different
+      - master  # change this if your main branch is different
 
 permissions:
   contents: write  # needed to push to gh-pages
