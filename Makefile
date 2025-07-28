@@ -33,7 +33,14 @@ test:
 
 
 init-venv:
-	@if command -v pyenv > /dev/null; then \
+	@if ! command -v pyenv > /dev/null; then \
+		echo "pyenv not found, installing..."; \
+		curl https://pyenv.run | bash; \
+		export PATH="$$HOME/.pyenv/bin:$$PATH"; \
+		eval "$$(pyenv init --path)"; \
+		eval "$$(pyenv init -)"; \
+	fi; \
+	if command -v pyenv > /dev/null; then \
 		echo "Using pyenv to manage Python version..."; \
 		if ! pyenv versions --bare | grep -q "^$(PYTHON_VERSION)$$"; then \
 			echo "Installing Python $(PYTHON_VERSION) via pyenv..."; \
@@ -42,9 +49,9 @@ init-venv:
 		pyenv local $(PYTHON_VERSION); \
 		PYTHON_BIN=$$(pyenv which python); \
 	else \
-		echo "pyenv not found, checking for system python$(PYTHON_VERSION)..."; \
+		echo "pyenv not found or failed to install. Falling back to system python$(PYTHON_VERSION)..."; \
 		if ! command -v python$(PYTHON_VERSION) > /dev/null; then \
-			echo "Python $(PYTHON_VERSION) not found. Please install it manually or use pyenv."; \
+			echo "Python $(PYTHON_VERSION) not found. Please install it manually."; \
 			exit 1; \
 		fi; \
 		PYTHON_BIN=$$(command -v python$(PYTHON_VERSION)); \
