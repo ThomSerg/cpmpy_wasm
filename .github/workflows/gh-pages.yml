@@ -28,16 +28,15 @@ jobs:
       - name: Run make all
         run: make all
 
+      - name: Prepare deploy directory
+        run: |
+          mkdir page
+          cp ./index.html page/
+          cp -r ./build page/build
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./ 
+          publish_dir: ./page
 
-      - name: Force add build artifacts
-        run: |
-          git checkout gh-pages
-          git config --global user.email "thomas.s2000@hotmail.com"
-          git config --global user.name "GitHub Actions"
-          git add -f build/
-          git commit -m "Add build artifacts" || echo "No changes to commit"
